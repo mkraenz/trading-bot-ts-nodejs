@@ -16,7 +16,6 @@ function insertPrices(db: Db, prices: number[],
     let pricedb = db.db(dbName);
     let myobj = {stocksymbol: stocksymbol, prices: prices};
     let collection = pricedb.collection(dbPricesCollection);
-    console.log(collection)
 
     collection.insertOne(myobj)
         .then((result) => 
