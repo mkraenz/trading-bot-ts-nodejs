@@ -10,7 +10,8 @@ export class DbToMarketDataAdapter implements IMarketData
     private period = 0;
     private prices: number[];
 
-    async loadData(): Promise<void>{
+    async loadData(): Promise<void>
+    {
         let db: Db = await MongoClient.connect(dbUrl);
         let dbo = db.db(dbName);
         let query = {stocksymbol: STOCK_SYMBOL};
@@ -22,10 +23,10 @@ export class DbToMarketDataAdapter implements IMarketData
     price(stocksymbol: string): number
     {
         this.period++;
-        return this.prices[this.period];
+        return this.prices[this.period - 1];
     }
 
-    previousPrice(stocksymbol: string)
+    previousPrice(stocksymbol: string): number
     {
         return this.period > 0 ? this.prices[this.period - 1] : this.prices[this.period]
     }
@@ -41,4 +42,3 @@ async function main(): Promise<void>
     console.log(marketdata.previousPrice(STOCK_SYMBOL))
 }
 
-main()
