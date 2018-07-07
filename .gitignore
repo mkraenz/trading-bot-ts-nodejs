@@ -1,0 +1,7 @@
+# eclipse files
+.project
+.pydevproject
+
+*.js
+
+node_modules
