@@ -1,6 +1,6 @@
 import {DbToMarketDataAdapter} from "./DbToMarketDataAdapter";
 import {IBroker} from "./IBroker";
-import {IMarketData} from "./IMarketData";
+import {MarketDataViaGraphQL} from "./MarketDataViaGraphQL";
 import {INITIAL_STOCKS, FEE, INITIAL_CASH} from "./settings";
 
 export class FakeBroker implements IBroker
@@ -9,32 +9,34 @@ export class FakeBroker implements IBroker
     private _fee = FEE;
     private _cash = INITIAL_CASH;
 
-    constructor(private dbToMarketDataAdapter: DbToMarketDataAdapter) {}
+    constructor(private marketData: MarketDataViaGraphQL) {}
 
-    buy(stocksymbol: string, amount: number): boolean
+    async buy(stocksymbol: string, amount: number): Promise<void>
     {
-        let total_price = this.fee + amount * this.price(stocksymbol);
+        let price = await this.price(stocksymbol);
+        let total_price = this.fee + amount * price;
         if (total_price <= this.cash - this.fee) // must be able to sell with fees
         {
-            console.log('total buy price: ' + total_price);
+            console.log('total buy price: ', total_price);
+            console.log('broker buy price: ', price);
             this._stocks += amount;
             this._cash -= total_price;
-            return true;
         } else
         {
             throw Error("Not enough cash to buy.");
         }
     }
 
-    sell(stocksymbol: string, amount: number): boolean
+    async sell(stocksymbol: string, amount: number): Promise<void>
     {
         if (amount <= this._stocks)
         {
             this._stocks -= amount;
-            let total_value = amount * this.price(stocksymbol) - this.fee;
+            let price = await this.price(stocksymbol);
+            let total_value = amount * price - this.fee;
             console.log("total sell value: " + total_value);
+            console.log('broker sell price: ', price);
             this._cash += total_value;
-            return true;
         } else
         {
             throw Error("Not enough stocks to sell.")
@@ -56,9 +58,8 @@ export class FakeBroker implements IBroker
         return this._cash;
     }
 
-    private price(stocksymbol: string): number
+    private price(stocksymbol: string): Promise<number>
     {
-        return this.dbToMarketDataAdapter.previousPrice(stocksymbol)
+        return this.marketData.priceNoTimePassing(stocksymbol)
     }
-
 }
