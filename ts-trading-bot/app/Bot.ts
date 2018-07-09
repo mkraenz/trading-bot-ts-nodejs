@@ -9,40 +9,46 @@ export class Bot
 
     constructor(private broker: IBroker, private marketData: IMarketData) {}
 
-    run(periods: number)
+    async run(periods: number)
     {
 
-        this.buyInitialStocks();
+        await this.buyInitialStocks();
         for (let i = 0; i < periods; i++)
         {
-            if (this.profitableSell())
+            if (await this.isProfitableSell())
             {
-                this.broker.sell(STOCK_SYMBOL, this.broker.stocks); // todo: try catch?
+                this.broker.sell(STOCK_SYMBOL, this.broker.stocks);
                 console.log("sell in period: " + i);
+            }
+
+            if (i == periods - 1)
+            {
+                console.log('final cash = ' + this.broker.cash)
             }
         }
     }
 
-    private buyInitialStocks()
+    private async buyInitialStocks()
     {
-        this.purchasePrice = this.marketData.price(STOCK_SYMBOL);
-        this.broker.buy(STOCK_SYMBOL, AMOUNT); // todo: try catch?
+        this.purchasePrice = await this.marketData.price(STOCK_SYMBOL);
+        await this.broker.buy(STOCK_SYMBOL, AMOUNT);
+        console.log('bot buy price: ', this.purchasePrice)
         console.log('cash after initial buy: ' + this.broker.cash);
     }
 
-    private profitableSell()
+    private async isProfitableSell()
     {
-        return this.current_revenue() > ROI * this.total_costs();
+        let curr_rev = await this.current_revenue();
+        return curr_rev > ROI * this.total_costs();
     }
 
-
-    private current_revenue(): number
+    private async current_revenue(): Promise<number>
     {
-        return this.marketData.price(STOCK_SYMBOL) * this.broker.stocks - this.broker.fee;
+        return (await this.marketData.price(STOCK_SYMBOL)) * this.broker.stocks - this.broker.fee;
     }
 
     private total_costs(): number
     {
-        return this.purchasePrice * this.broker.stocks + this.broker.fee; // TODO this is almost a constant
+        return this.purchasePrice * this.broker.stocks + this.broker.fee;
     }
 }

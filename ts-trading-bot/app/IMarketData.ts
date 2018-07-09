@@ -1,3 +1,3 @@
 export interface IMarketData{
-    price(stocksymbol: string): number;
+    price(stocksymbol: string): Promise<number>;
 }
