@@ -1,6 +1,7 @@
 import {DbToMarketDataAdapter} from "./DbToMarketDataAdapter";
 import {IBroker} from "./IBroker";
 import {MarketDataViaGraphQL} from "./MarketDataViaGraphQL";
+import {sendLogMsg} from "./rabbitmq-test/send";
 import {INITIAL_STOCKS, FEE, INITIAL_CASH} from "./settings";
 
 export class FakeBroker implements IBroker
@@ -17,8 +18,9 @@ export class FakeBroker implements IBroker
         let total_price = this.fee + amount * price;
         if (total_price <= this.cash - this.fee) // must be able to sell with fees
         {
-            console.log('total buy price: ', total_price);
-            console.log('broker buy price: ', price);
+
+            this.log('total buy price: ' + total_price);
+            this.log('broker buy price: ' + price);
             this._stocks += amount;
             this._cash -= total_price;
         } else
@@ -34,8 +36,8 @@ export class FakeBroker implements IBroker
             this._stocks -= amount;
             let price = await this.price(stocksymbol);
             let total_value = amount * price - this.fee;
-            console.log("total sell value: " + total_value);
-            console.log('broker sell price: ', price);
+            this.log("total sell value: " + total_value);
+            this.log('broker sell price: ' + price);
             this._cash += total_value;
         } else
         {
@@ -61,5 +63,11 @@ export class FakeBroker implements IBroker
     private price(stocksymbol: string): Promise<number>
     {
         return this.marketData.priceNoTimePassing(stocksymbol)
+    }
+
+    private log(msg: string): void
+    {
+        sendLogMsg(msg);
+        console.log(msg);
     }
 }
