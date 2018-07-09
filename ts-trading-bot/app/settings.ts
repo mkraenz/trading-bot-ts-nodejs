@@ -8,6 +8,10 @@ export const STOCK_SYMBOL = "EOAN.DE";
 export let dbUrl = "mongodb://localhost:27017/";
 export let dbName = "pricedb";
 export let dbPricesCollection = "prices";
+export let LOG_COLLECTION = "bot-log";
+
+// rabbitMQ
+export let LOG_QUEUE = 'bot-log'
 
 
 // PricesFromCsv and others

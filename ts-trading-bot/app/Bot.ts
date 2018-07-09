@@ -1,5 +1,6 @@
 import {IBroker} from "./IBroker";
 import {IMarketData} from "./IMarketData";
+import {sendLogMsg} from "./rabbitmq-test/send";
 import {STOCK_SYMBOL, AMOUNT, ROI} from "./settings";
 
 export class Bot
@@ -17,13 +18,9 @@ export class Bot
         {
             if (await this.isProfitableSell())
             {
-                this.broker.sell(STOCK_SYMBOL, this.broker.stocks);
-                console.log("sell in period: " + i);
-            }
-
-            if (i == periods - 1)
-            {
-                console.log('final cash = ' + this.broker.cash)
+                await this.broker.sell(STOCK_SYMBOL, this.broker.stocks);
+                this.log("sell in period: " + i)
+                this.log('new cash = ' + this.broker.cash);
             }
         }
     }
@@ -32,8 +29,8 @@ export class Bot
     {
         this.purchasePrice = await this.marketData.price(STOCK_SYMBOL);
         await this.broker.buy(STOCK_SYMBOL, AMOUNT);
-        console.log('bot buy price: ', this.purchasePrice)
-        console.log('cash after initial buy: ' + this.broker.cash);
+        this.log('bot buy price: ' + this.purchasePrice);
+        this.log('cash after initial buy: ' + this.broker.cash);
     }
 
     private async isProfitableSell()
@@ -50,5 +47,11 @@ export class Bot
     private total_costs(): number
     {
         return this.purchasePrice * this.broker.stocks + this.broker.fee;
+    }
+
+    private log(msg: string): void
+    {
+        sendLogMsg(msg);
+        console.log(msg);
     }
 }
