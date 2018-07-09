@@ -18,11 +18,11 @@ export class Bot
         {
             if (await this.isProfitableSell())
             {
-                this.broker.sell(STOCK_SYMBOL, this.broker.stocks);
+                await this.broker.sell(STOCK_SYMBOL, this.broker.stocks);
                 this.log("sell in period: " + i)
+                this.log('new cash = ' + this.broker.cash);
             }
         }
-        this.log('final cash = ' + this.broker.cash);
     }
 
     private async buyInitialStocks()
